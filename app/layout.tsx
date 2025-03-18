@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider, SignInButton, SignedIn, SignedOut, SignIn, UserButton } from '@clerk/nextjs';
 import "./globals.css";
 
 const geistSans = Geist({
