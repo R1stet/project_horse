@@ -1,29 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'  // Added this import
-import { Search, Filter, Grid, List, Loader2, ImageOff } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Search, Filter, Grid, List, Loader2 } from 'lucide-react'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
 import { createClient } from '@/utils/supabase/client'
-import Image from 'next/image'
+import ListingCard from '@/components/ListingCard'
+import { useWishlist } from '@/context/WishlistContext' // Import the wishlist context
 
+// Ensure this matches the interface in ListingCard component
 interface Listing {
-  id: string
-  title: string
-  price: number
-  location: string
-  category: string
-  image_url: string
-  rating: number
-  user_id?: string
-  created_at?: string
-  description?: string
-  subcategory?: string
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+  category: string;
+  image_url: string;
+  rating?: number;
+  user_id: string; // Required to match ListingCard
+  created_at?: string;
+  description?: string;
+  subcategory?: string;
+  condition?: string;
 }
 
 export default function MarketplacePage() {
-  const router = useRouter()  // Added router initialization
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [selectedFilters, setSelectedFilters] = useState({
@@ -36,26 +39,10 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
+  // Use the wishlist context instead of local state
+  const { isInWishlist, toggleWishlist } = useWishlist()
+  
   const supabase = createClient()
-
-  // Function to get the correct image URL - same as in ListingCard
-  const getImageUrl = (url: string) => {
-    // If it's already a full URL, return it
-    if (url?.startsWith('http')) {
-      return url
-    }
-    
-    // If it's just a path, get the public URL
-    if (url) {
-      const { data } = supabase
-        .storage
-        .from('listing-images')
-        .getPublicUrl(url)
-      return data?.publicUrl
-    }
-    
-    return null
-  }
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -75,7 +62,14 @@ export default function MarketplacePage() {
 
         if (data) {
           console.log('Fetched listings:', data)
-          setListings(data)
+          // Ensure all listings have a user_id
+          const processedData = data.map(listing => ({
+            ...listing,
+            user_id: listing.user_id || 'unknown', // Ensure user_id is never undefined
+            rating: listing.rating || 0 // Ensure rating is never undefined
+          })) as Listing[]
+          
+          setListings(processedData)
         }
       } catch (err: any) {
         console.error('Error fetching listings:', err)
@@ -110,7 +104,8 @@ export default function MarketplacePage() {
     // Rating filter
     let matchesRating = true
     if (selectedFilters.rating) {
-      matchesRating = listing.rating >= Number(selectedFilters.rating)
+      const listingRating = listing.rating || 0
+      matchesRating = listingRating >= Number(selectedFilters.rating)
     }
     
     return matchesSearch && matchesCategory && matchesPriceRange && matchesLocation && matchesRating
@@ -135,9 +130,9 @@ export default function MarketplacePage() {
           </div>
         </div>
 
-        <div className="flex flex-row gap-8">
+        <div className="flex flex-col md:flex-row gap-8">
           {/* Filters Sidebar */}
-          <div className="w-64 flex-shrink-0">
+          <div className="w-full md:w-64 flex-shrink-0">
             <div className="bg-white p-4 rounded-lg shadow sticky top-4">
               <div className="flex items-center gap-2 mb-4">
                 <Filter size={20} />
@@ -210,13 +205,13 @@ export default function MarketplacePage() {
             {/* View Toggle */}
             <div className="flex justify-end mb-4 gap-2">
               <button
-                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-100'}`}
+                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-rose-500 text-white' : 'bg-gray-100'}`}
                 onClick={() => setViewMode('grid')}
               >
                 <Grid size={20} />
               </button>
               <button
-                className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-100'}`}
+                className={`p-2 rounded ${viewMode === 'list' ? 'bg-rose-500 text-white' : 'bg-gray-100'}`}
                 onClick={() => setViewMode('list')}
               >
                 <List size={20} />
@@ -240,54 +235,54 @@ export default function MarketplacePage() {
               </div>
             ) : (
               /* Listings */
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
-                {filteredListings.map((listing) => {
-                  // Get the image URL for each listing
-                  const imageUrl = getImageUrl(listing.image_url);
-                  
-                  return (
-                    <div
-                      key={listing.id}
-                      className={`bg-white rounded-lg shadow overflow-hidden ${
-                        viewMode === 'list' ? 'flex' : ''
-                      } cursor-pointer hover:shadow-lg transition-shadow duration-200`}
-                      onClick={() => router.push(`/listings/${listing.id}`)}
-                    >
-                      <div className={viewMode === 'list' ? 'w-48 h-48 relative' : 'w-full h-48 relative'}>
-                        {imageUrl ? (
-                          <div className="relative w-full h-full">
-                            <Image
-                              src={imageUrl}
-                              alt={listing.title || 'Listing image'}
-                              fill
-                              className="object-cover"
-                              onError={(e) => {
-                                console.log(`Image failed to load: ${imageUrl}`);
-                                // Reset src to placeholder
-                                const imgElement = e.target as HTMLImageElement;
-                                imgElement.src = '/api/placeholder/400/300';
-                              }}
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            />
+              <div className={
+                viewMode === 'grid' 
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' 
+                  : 'space-y-4'
+              }>
+                {filteredListings.map((listing) => (
+                  <div key={listing.id} className={viewMode === 'list' ? 'flex w-full' : ''}>
+                    {viewMode === 'list' ? (
+                      <div className="flex w-full bg-white shadow-sm rounded-lg overflow-hidden">
+                        <div className="w-1/3 max-w-[240px]">
+                          <ListingCard 
+                            listing={listing}
+                            isFavorite={isInWishlist(listing.id)} // Use wishlist context
+                            onToggleFavorite={toggleWishlist} // Use wishlist context
+                            compact={true}
+                          />
+                        </div>
+                        <div className="p-4 flex-1">
+                          <h3 className="font-semibold text-lg mb-2">{listing.title}</h3>
+                          <p className="text-gray-700 mb-3 line-clamp-2">
+                            {listing.description || "No description provided."}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <span className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                              {listing.category}
+                            </span>
+                            {listing.subcategory && (
+                              <span className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                                {listing.subcategory}
+                              </span>
+                            )}
                           </div>
-                        ) : (
-                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                            <ImageOff className="text-gray-400" size={32} />
+                          <div className="mt-auto">
+                            <p className="text-rose-600 font-semibold text-lg">
+                              {listing.price.toLocaleString()} kr DKK
+                            </p>
                           </div>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-lg mb-2">{listing.title}</h3>
-                        <p className="text-gray-600 mb-2">{listing.location}</p>
-                        <p className="text-blue-600 font-semibold">${listing.price.toLocaleString()}</p>
-                        <div className="mt-2 flex items-center">
-                          <span className="text-yellow-400">★</span>
-                          <span className="ml-1">{listing.rating}</span>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    ) : (
+                      <ListingCard 
+                        listing={listing}
+                        isFavorite={isInWishlist(listing.id)} // Use wishlist context
+                        onToggleFavorite={toggleWishlist} // Use wishlist context
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>

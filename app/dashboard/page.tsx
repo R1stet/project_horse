@@ -41,17 +41,7 @@ export default function Dashboard() {
         }
         setUser(user)
         setEmail(user.email || '')
-        
-        // Handle profile fetching with better error handling
-        try {
-          await fetchUserProfile(user.id)
-        } catch (profileError) {
-          console.error('Profile error:', profileError)
-          // Set a default username even if profile fetch fails
-          if (user.email) {
-            setUsername(user.email.split('@')[0])
-          }
-        }
+        fetchUserProfile(user.id)
       } catch (error) {
         console.error('Error:', error)
         router.push('/login')
@@ -66,30 +56,25 @@ export default function Dashboard() {
   // Fetch user profile data
   const fetchUserProfile = async (userId: string) => {
     try {
-      // Use maybeSingle instead of single to avoid errors when no results are found
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle()
+        .single()
 
       if (error) {
-        console.error('Error fetching profile:', error)
-        throw error
-      } 
-      
-      if (data) {
-        // Profile exists, update state
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist, create one
+          await createUserProfile(userId)
+        } else {
+          console.error('Error fetching profile:', error)
+        }
+      } else if (data) {
         setUsername(data.username || '')
         setAvatarUrl(data.avatar_url || null)
-      } else {
-        // Profile doesn't exist, create one
-        console.log('No profile found, creating new profile')
-        await createUserProfile(userId)
       }
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error)
-      throw error // Rethrow to handle in the parent function
+      console.error('Error:', error)
     }
   }
 
@@ -98,59 +83,20 @@ export default function Dashboard() {
     try {
       const { data: userData } = await supabase.auth.getUser()
       const email = userData?.user?.email || ''
-      const defaultUsername = email.split('@')[0] || 'user'
 
-      // Check if profile already exists first to avoid conflicts
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .maybeSingle()
-
-      if (existingProfile) {
-        console.log('Profile already exists, skipping creation')
-        setUsername(defaultUsername)
-        return
-      }
-
-      // Use upsert instead of insert to handle both insert and update cases
       const { error } = await supabase
         .from('profiles')
-        .upsert({
+        .insert({
           id: userId,
-          username: defaultUsername,
+          username: email.split('@')[0], // Use the first part of email as username
           avatar_url: null,
           updated_at: new Date().toISOString()
-        }, { 
-          onConflict: 'id', 
-          ignoreDuplicates: false 
         })
 
       if (error) {
         console.error('Error creating profile:', error)
-        
-        // If there's an error, check if required fields are missing
-        if (error.message.includes('violates not-null constraint')) {
-          console.warn('Adding required fields and retrying')
-          
-          // Try again with all possible fields (in case of missing columns)
-          const { error: retryError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: userId,
-              username: defaultUsername,
-              avatar_url: null,
-              updated_at: new Date().toISOString()
-            })
-            
-          if (retryError) {
-            console.error('Retry error:', retryError)
-          } else {
-            setUsername(defaultUsername)
-          }
-        }
       } else {
-        setUsername(defaultUsername)
+        setUsername(email.split('@')[0])
       }
     } catch (error) {
       console.error('Error:', error)
@@ -526,7 +472,7 @@ export default function Dashboard() {
                   <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                 </div>
               ) : listings.length > 0 ? (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {listings.map((listing) => (
                     <div 
                       key={listing.id} 

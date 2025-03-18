@@ -9,7 +9,8 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
@@ -77,25 +78,70 @@ const Header = () => {
         <div className="flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger className="focus:outline-none">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={user.user_metadata.avatar_url} />
-                <AvatarFallback>
-                  {(user.email?.[0] || 'U').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-full p-1 pl-3 pr-1 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex flex-col justify-between h-4 w-5">
+                  <div className="w-full h-0.5 bg-gray-600"></div>
+                  <div className="w-full h-0.5 bg-gray-600"></div>
+                  <div className="w-full h-0.5 bg-gray-600"></div>
+                </div>
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={user.user_metadata.avatar_url} />
+                  <AvatarFallback className="bg-gray-200 text-gray-700">
+                    {(user.email?.[0] || 'U').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-64 mt-2 p-2">
               <DropdownMenuItem
-                className="cursor-pointer"
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
                 onClick={() => router.push('/dashboard')}
               >
-                Dashboard
+                Min Profil
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="cursor-pointer"
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+                onClick={() => router.push('/dashboard')}
+              >
+                XYZ
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+                onClick={() => router.push('/wishlist')}
+              >
+                Ønskelister
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-2" />
+              <DropdownMenuItem
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+                onClick={() => router.push('/host')}
+              >
+                XYZ
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+                onClick={() => router.push('/account')}
+              >
+                XYZ
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-2" />
+              <DropdownMenuItem
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+                onClick={() => router.push('/gift-cards')}
+              >
+                XYZ
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+                onClick={() => router.push('/help')}
+              >
+                Hjælpecenter
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
                 onClick={handleSignOut}
               >
-                Sign out
+                Log ud
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -105,18 +151,49 @@ const Header = () => {
 
     return (
       <>
-        <button 
-          onClick={() => router.push('/login')}
-          className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors"
-        >
-          Log in
-        </button>
-        <button 
-          onClick={() => router.push('/signup')}
-          className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium text-sm hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Sign up
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="focus:outline-none">
+            <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-full p-1 pl-3 pr-1 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex flex-col justify-between h-4 w-5">
+                <div className="w-full h-0.5 bg-gray-600"></div>
+                <div className="w-full h-0.5 bg-gray-600"></div>
+                <div className="w-full h-0.5 bg-gray-600"></div>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64 mt-2 p-2">
+            <DropdownMenuItem
+              className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100 font-medium"
+              onClick={() => router.push('/login')}
+            >
+              Log ind
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+              onClick={() => router.push('/signup')}
+            >
+              Tilmeld dig
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="my-2" />
+            <DropdownMenuItem
+              className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+              onClick={() => router.push('/om_os')}
+            >
+              Om os
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-100"
+              onClick={() => router.push('/help')}
+            >
+              Hjælpecenter
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </>
     );
   };
@@ -138,16 +215,29 @@ const Header = () => {
             </Avatar>
           </div>
           <button
-            onClick={() => router.push('/profile')}
-            className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-center"
+            onClick={() => router.push('/messages')}
+            className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
           >
-            Profile
+            Beskeder
           </button>
           <button
-            onClick={handleSignOut}
-            className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-center"
+            onClick={() => router.push('/dashboard')}
+            className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
           >
-            Sign out
+            Rejser
+          </button>
+          <button
+            onClick={() => router.push('/wishlist')}
+            className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
+          >
+            Ønskelister
+          </button>
+          <div className="border-t border-gray-100 my-2"></div>
+          <button
+            onClick={handleSignOut}
+            className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
+          >
+            Log ud
           </button>
         </div>
       );
@@ -157,15 +247,15 @@ const Header = () => {
       <div className="flex flex-col space-y-4">
         <button 
           onClick={() => router.push('/login')}
-          className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-center"
+          className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
         >
-          Log in
+          Log ind
         </button>
         <button 
           onClick={() => router.push('/signup')}
-          className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
+          className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
         >
-          Sign up
+          Tilmeld dig
         </button>
       </div>
     );
