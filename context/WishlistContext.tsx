@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 // Define types based on your database schema
 type Listing = {
@@ -40,17 +39,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [alert, setAlert] = useState<{
-    show: boolean; 
-    title: string; 
-    message: string; 
-    variant: 'default' | 'destructive'
-  }>({
-    show: false,
-    title: '',
-    message: '',
-    variant: 'default'
-  });
 
   // Fetch current user and wishlist on mount
   useEffect(() => {
@@ -116,12 +104,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Error in fetchUserAndWishlist:', error);
-        setAlert({
-          show: true,
-          title: "Failed to load wishlist",
-          message: "Please try again later.",
-          variant: "destructive"
-        });
       } finally {
         setLoading(false);
       }
@@ -159,12 +141,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       
       if (!user) {
         console.log("No user logged in, cannot toggle wishlist");
-        setAlert({
-          show: true,
-          title: "Login required",
-          message: "Please log in to save items to your wishlist",
-          variant: "default"
-        });
         return false;
       }
       
@@ -193,13 +169,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         
         // Update local state
         setWishlistItems(prev => prev.filter(item => item.item_id !== itemId));
-        
-        setAlert({
-          show: true,
-          title: "Removed from wishlist",
-          message: "Item removed from your wishlist",
-          variant: "default"
-        });
       } else {
         // Add to wishlist
         console.log("Adding item to wishlist");
@@ -241,38 +210,14 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           
           setWishlistItems(prev => [...prev, newItem]);
         }
-        
-        setAlert({
-          show: true,
-          title: "Added to wishlist",
-          message: "Item saved to your wishlist",
-          variant: "default"
-        });
       }
       
       return true;
     } catch (error) {
       console.error('Error in toggleWishlist:', error);
-      setAlert({
-        show: true,
-        title: "Operation failed",
-        message: "Failed to update wishlist. Please try again.",
-        variant: "destructive"
-      });
       return false;
     }
   };
-  
-  // Auto-hide the alert after 3 seconds
-  useEffect(() => {
-    if (alert.show) {
-      const timer = setTimeout(() => {
-        setAlert(prev => ({ ...prev, show: false }));
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [alert.show]);
   
   // Context value
   const value: WishlistContextType = {
@@ -290,14 +235,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   
   return (
     <WishlistContext.Provider value={value}>
-      {alert.show && (
-        <div className="fixed top-4 right-4 z-50 max-w-md">
-          <Alert variant={alert.variant}>
-            <AlertTitle>{alert.title}</AlertTitle>
-            <AlertDescription>{alert.message}</AlertDescription>
-          </Alert>
-        </div>
-      )}
       {children}
     </WishlistContext.Provider>
   );
