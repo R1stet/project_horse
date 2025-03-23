@@ -2,11 +2,14 @@
 
 import { ReactNode } from 'react';
 import { WishlistProvider } from "@/context/WishlistContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <WishlistProvider>
-      {children}
-    </WishlistProvider>
+    <AuthProvider>
+      <WishlistProvider>
+        {children}
+      </WishlistProvider>
+    </AuthProvider>
   );
 }

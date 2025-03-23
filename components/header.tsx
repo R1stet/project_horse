@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
-import { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   DropdownMenu, 
@@ -12,13 +10,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
-  const supabase = createClient();
 
   const categories = ['TIL RYTTEREN', 'TIL HESTEN', 'TIL STALDEN', 'SE ALLE'] as const;
   type Category = typeof categories[number];
@@ -30,33 +27,8 @@ const Header = () => {
     'SE ALLE': '/listings'
   };
 
-  useEffect(() => {
-    // Get initial auth state
-    const getUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getUser();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     router.push('/');
     router.refresh();
   };
@@ -71,7 +43,10 @@ const Header = () => {
   const renderAuthButtons = () => {
     // For desktop view (logged in state only)
     if (isLoading) {
-      return null;
+      // Show skeleton loader while auth state is loading
+      return (
+        <div className="h-10 w-24 bg-gray-200 rounded-full animate-pulse"></div>
+      );
     }
 
     if (user) {
@@ -86,7 +61,7 @@ const Header = () => {
                 <div className="w-full h-0.5 bg-gray-600"></div>
               </div>
               <Avatar className="w-8 h-8">
-                <AvatarImage src={user.user_metadata.avatar_url} />
+                <AvatarImage src={user.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-gray-200 text-gray-700">
                   {(user.email?.[0] || 'U').toUpperCase()}
                 </AvatarFallback>
@@ -156,7 +131,11 @@ const Header = () => {
   const renderMobileAuthButtons = () => {
     // For mobile view
     if (isLoading) {
-      return null;
+      return (
+        <div className="flex justify-center py-4">
+          <div className="h-10 w-32 bg-gray-200 rounded-md animate-pulse"></div>
+        </div>
+      );
     }
 
     if (user) {
@@ -165,7 +144,7 @@ const Header = () => {
         <div className="flex flex-col space-y-4">
           <div className="flex items-center justify-center">
             <Avatar className="w-10 h-10">
-              <AvatarImage src={user.user_metadata.avatar_url} />
+              <AvatarImage src={user.user_metadata?.avatar_url} />
               <AvatarFallback>
                 {(user.email?.[0] || 'U').toUpperCase()}
               </AvatarFallback>
@@ -207,7 +186,7 @@ const Header = () => {
           onClick={() => router.push('/signup')}
           className="w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
         >
-          Create new listing
+          Sælg nu
         </button>
         <button 
           onClick={() => router.push('/login')}
@@ -226,8 +205,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/')}>
-              <div className="h-10 w-10 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg"></div>
-              <span className="text-xl font-semibold text-gray-800">Brand</span>
+              <span className="text-xl font-semibold text-gray-800">RideLikeAPro</span>
             </div>
           </div>
 
@@ -269,13 +247,19 @@ const Header = () => {
 
           {/* Desktop Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+            {isLoading ? (
+              // Skeleton loader while checking auth state
+              <div className="flex space-x-4">
+                <div className="h-10 w-36 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+              </div>
+            ) : user ? (
               <>
                 <button 
                   onClick={() => router.push('/create_listing')}
                   className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
                 >
-                  Create new listing
+                  Sælg nu
                 </button>
                 {renderAuthButtons()}
               </>
@@ -285,7 +269,7 @@ const Header = () => {
                   onClick={() => router.push('/signup')}
                   className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
                 >
-                  Create new listing
+                  Sælg nu
                 </button>
                 <button 
                   onClick={() => router.push('/login')}

@@ -19,8 +19,7 @@ const Footer = () => {
           <div className="space-y-8">
             {/* Logo */}
             <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg"></div>
-              <span className="text-xl font-semibold text-white">Brand</span>
+              <span className="text-xl font-semibold text-white">RideLikeAPro</span>
             </div>
             <ul className="space-y-4">
               <li>

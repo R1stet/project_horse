@@ -1,14 +1,17 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ImageOff } from 'lucide-react';
+import { ImageOff, MoveRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { createClient } from '@/utils/supabase/client';
 import { Brands } from '@/components/brand';
 import ListingCard from '@/components/ListingCard';
-import { useWishlist } from '@/context/WishlistContext'; // Import the wishlist context
+import { useWishlist } from '@/context/WishlistContext';
 
 interface Listing {
   id: string;
@@ -29,21 +32,59 @@ export default function FrontPage() {
     const router = useRouter();
     const [recentListings, setRecentListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
+    const [heroImageUrl, setHeroImageUrl] = useState('');
+    const [imageLoading, setImageLoading] = useState(true);
     const supabase = createClient();
     
-    // Use the wishlist context instead of local state
     const { isInWishlist, toggleWishlist } = useWishlist();
     
-    // Map to store usernames
     const [usernames, setUsernames] = useState<{[key: string]: string}>({});
+    
+    // Animated title state and effect
+    const [titleNumber, setTitleNumber] = useState(0);
+    const titles = useMemo(
+      () => ["amazing", "unique", "quality", "fantastic", "premium"],
+      []
+    );
+    
+    useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        if (titleNumber === titles.length - 1) {
+          setTitleNumber(0);
+        } else {
+          setTitleNumber(titleNumber + 1);
+        }
+      }, 2000);
+      return () => clearTimeout(timeoutId);
+    }, [titleNumber, titles]);
 
-    // Fetch listings without any joins
+    // Fetch hero image from Supabase storage
+    useEffect(() => {
+      const fetchHeroImage = async () => {
+        try {
+          // getPublicUrl returns { data: { publicUrl: string } } without an error property
+          const { data } = await supabase
+            .storage
+            .from('frontpage-images')
+            .getPublicUrl('hero-image.jpg');
+            
+          // If we get here, we have a publicUrl
+          setHeroImageUrl(data.publicUrl);
+        } catch (err) {
+          // This catches any exceptions thrown during the process
+          console.error('Error in hero image fetch:', err);
+          setImageLoading(false);
+        }
+      };
+
+      fetchHeroImage();
+    }, [supabase]);
+
     useEffect(() => {
       const fetchRecentListings = async () => {
         setLoading(true);
         
         try {
-          // Simple query to fetch just the listings
           const { data, error } = await supabase
             .from('listings')
             .select('*')
@@ -56,23 +97,17 @@ export default function FrontPage() {
           } else if (data) {
             setRecentListings(data);
             
-            // Extract unique user IDs
             const userIds = [...new Set(data.map(listing => listing.user_id))];
             
-            // Try to fetch usernames separately
             try {
-              // Create a temporary map for usernames
               const usernameMap: {[key: string]: string} = {};
               
-              // Get current user to identify their listings
               const { data: { user } } = await supabase.auth.getUser();
               
-              // First add the current user's username
               if (user) {
                 usernameMap[user.id] = 'You (Current User)';
               }
               
-              // Fetch usernames from profiles table
               const { data: profiles, error: profilesError } = await supabase
                 .from('profiles')
                 .select('id, username')
@@ -81,16 +116,13 @@ export default function FrontPage() {
               if (profilesError) {
                 console.error('Error fetching profiles:', profilesError);
               } else if (profiles) {
-                // Add fetched usernames to the map
                 profiles.forEach(profile => {
-                  // Only add if not already set (preserves current user label)
                   if (!usernameMap[profile.id]) {
                     usernameMap[profile.id] = profile.username || `User ${profile.id.substring(0, 6)}`;
                   }
                 });
               }
               
-              // For any remaining IDs without usernames, use fallback format
               userIds.forEach(id => {
                 if (!usernameMap[id]) {
                   usernameMap[id] = `User ${id.substring(0, 6)}`;
@@ -113,50 +145,94 @@ export default function FrontPage() {
       fetchRecentListings();
     }, [supabase]);
 
+    const handleImageLoad = () => {
+      setImageLoading(false);
+    };
+
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         
         <main className="flex-grow">
-          {/* Hero Section */}
-          <section className="relative w-full h-[500px] flex items-center justify-center bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400">
-            <div className="absolute inset-0 bg-black/20"></div>
-            <div className="relative text-center px-4 sm:px-6 lg:px-8">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-                Find amazing products
-              </h2>
-              <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-                Discover quality items from trusted sellers in our marketplace
-              </p>
-              <div className="max-w-3xl mx-auto bg-white rounded-full shadow-lg p-2">
-                <div className="flex flex-col md:flex-row">
-                  <div className="flex-1 p-2 border-b md:border-b-0 md:border-r border-gray-200">
-                    <div className="font-medium text-sm">What</div>
-                    <input 
-                      type="text" 
-                      placeholder="Search products" 
-                      className="w-full border-none focus:ring-0 text-gray-800 placeholder-gray-400"
-                    />
-                  </div>
-                  <div className="flex-1 p-2 border-b md:border-b-0 md:border-r border-gray-200">
-                    <div className="font-medium text-sm">Category</div>
-                    <div className="text-gray-800">All categories</div>
-                  </div>
-                  <div className="flex-1 p-2 relative">
-                    <div className="font-medium text-sm">Price</div>
-                    <div className="text-gray-800">Any price</div>
-                    <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-500 text-white p-3 rounded-full">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
+          {/* Hero Section with Image Background */}
+          <section className="relative w-full h-[600px]">
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0 z-0">
+              {heroImageUrl ? (
+                <Image 
+                  src={heroImageUrl}
+                  alt="Marketplace hero background"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  priority
+                  onLoad={handleImageLoad}
+                />
+              ) : (
+                // Fallback to gradient if image fails to load
+                <div className="w-full h-full bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400"></div>
+              )}
+              {/* Dark overlay for better text readability */}
+              <div className="absolute inset-0 bg-black/40"></div>
+            </div>
+            
+            {/* Content */}
+            <div className="container relative z-10 mx-auto h-full">
+              <div className="flex gap-8 py-20 lg:py-32 items-center justify-center flex-col h-full">
+                <div className="flex gap-4 flex-col">
+                  <h1 className="text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-regular text-white">
+                    <span>Find </span>
+                    <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1">
+                      &nbsp;
+                      {titles.map((title, index) => (
+                        <motion.span
+                          key={index}
+                          className="absolute font-semibold"
+                          initial={{ opacity: 0, y: "-100" }}
+                          transition={{ type: "spring", stiffness: 50 }}
+                          animate={
+                            titleNumber === index
+                              ? {
+                                  y: 0,
+                                  opacity: 1,
+                                }
+                              : {
+                                  y: titleNumber > index ? -150 : 150,
+                                  opacity: 0,
+                                }
+                          }
+                        >
+                          {title}
+                        </motion.span>
+                      ))}
+                    </span>
+                    <span> products</span>
+                  </h1>
+                  <p className="text-lg md:text-xl leading-relaxed tracking-tight text-white max-w-2xl text-center">
+                    Discover quality items from trusted sellers in our marketplace. Browse and find the perfect items for your needs.
+                  </p>
+                </div>
+                <div className="flex flex-row gap-3">
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    onClick={() => router.push('/listings')}
+                    className="gap-4 bg-white text-rose-500 hover:bg-gray-100 hover:text-rose-600"
+                  >
+                    Browse products <MoveRight className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    onClick={() => router.push('/create_listing')}
+                    className="gap-4 bg-white text-rose-500 font-bold hover:bg-gray-100 transition-colors shadow-lg"
+                  >
+                    SÆLG NU
+                  </Button>
                 </div>
               </div>
             </div>
           </section>
   
-          {/* Listings Section */}
+          {/* Featured Products Section */}
           <section className="w-full py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-8">
@@ -190,8 +266,8 @@ export default function FrontPage() {
                       key={listing.id}
                       listing={listing}
                       sellerName={usernames[listing.user_id]}
-                      isFavorite={isInWishlist(listing.id)} // Use wishlist context
-                      onToggleFavorite={toggleWishlist} // Use wishlist context
+                      isFavorite={isInWishlist(listing.id)}
+                      onToggleFavorite={toggleWishlist}
                     />
                   ))
                 )}
