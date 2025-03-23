@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Script from 'next/script';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { useRouter } from 'next/navigation';
@@ -34,8 +35,8 @@ export default function Login() {
       }
 
       // Successful login
-      router.push('/'); // Redirect to home page
-      router.refresh(); // Refresh to update auth state
+      router.push('/');
+      router.refresh();
     } catch (err: any) {
       console.error('Error:', err);
       setError(err.message || 'An error occurred during sign in');
@@ -47,6 +48,8 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      {/* Cloudflare Turnstile script */}
+      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       <main className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
           <div>
@@ -122,6 +125,14 @@ export default function Login() {
                   Forgot your password?
                 </button>
               </div>
+            </div>
+
+            {/* Cloudflare Turnstile Widget */}
+            <div className="my-4">
+              <div
+                className="cf-turnstile"
+                data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
+              ></div>
             </div>
 
             <div>

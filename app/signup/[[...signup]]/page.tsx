@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Script from 'next/script';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { useRouter } from 'next/navigation';
@@ -39,6 +40,7 @@ export default function SignUp() {
     setIsSubmitting(true);
 
     try {
+      // Note: The Turnstile widget automatically appends a hidden input named "cf-turnstile-response" to your form data.
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -47,6 +49,7 @@ export default function SignUp() {
             first_name: formData.firstName,
             last_name: formData.lastName,
           }
+          // Optionally, you can pass the captcha token if needed.
         }
       });
 
@@ -160,6 +163,9 @@ export default function SignUp() {
         </Alert>
       )}
 
+      {/* Cloudflare Turnstile script */}
+      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+
       <form onSubmit={handleInitialSubmit} className="mt-8 space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -253,6 +259,14 @@ export default function SignUp() {
               Privacy Policy
             </button>
           </label>
+        </div>
+
+        {/* Cloudflare Turnstile Widget */}
+        <div className="my-4">
+          <div
+            className="cf-turnstile"
+            data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
+          ></div>
         </div>
 
         <button
