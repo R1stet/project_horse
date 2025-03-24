@@ -11,19 +11,112 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import MegaMenu from './MegaMenu';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
 
-  const categories = ['TIL RYTTEREN', 'TIL HESTEN', 'TIL STALDEN'] as const;
-  type Category = typeof categories[number];
-  
-  const categoryRoutes: Record<Category, string | undefined> = {
-    'TIL RYTTEREN': undefined,
-    'TIL HESTEN': undefined,
-    'TIL STALDEN': undefined,};
+  // Define the mega menu structure
+  const megaMenuCategories = [
+    {
+      name: 'TIL RYTTEREN',
+      subcategories: [
+        {
+          name: 'Ridebukser',
+          items: [
+            { name: 'Damer', slug: 'rytter/ridebukser/damer' },
+            { name: 'Herrer', slug: 'rytter/ridebukser/herrer' },
+            { name: 'Børn', slug: 'rytter/ridebukser/born' }
+          ]
+        },
+        {
+          name: 'Jakker',
+          items: [
+            { name: 'Softshell', slug: 'rytter/jakker/softshell' },
+            { name: 'Regntæt', slug: 'rytter/jakker/regntat' },
+            { name: 'Vinterjakker', slug: 'rytter/jakker/vinter' }
+          ]
+        },
+        {
+          name: 'Sikkerhedsudstyr',
+          items: [
+            { name: 'Ridehjelme', slug: 'rytter/sikkerhed/hjelme' },
+            { name: 'Sikkerhedsveste', slug: 'rytter/sikkerhed/veste' },
+            { name: 'Reflekser', slug: 'rytter/sikkerhed/reflekser' }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'TIL HESTEN',
+      subcategories: [
+        {
+          name: 'Dækkener',
+          items: [
+            { name: 'Staldtæpper', slug: 'hest/dakkener/stald' },
+            { name: 'Fluedækkener', slug: 'hest/dakkener/flue' },
+            { name: 'Regnslag', slug: 'hest/dakkener/regn' }
+          ]
+        },
+        {
+          name: 'Udstyr',
+          items: [
+            { name: 'Hovedtøj', slug: 'hest/udstyr/hovedtoj' },
+            { name: 'Sadler', slug: 'hest/udstyr/sadler' },
+            { name: 'Gamacher', slug: 'hest/udstyr/gamacher' }
+          ]
+        },
+        {
+          name: 'Pleje',
+          items: [
+            { name: 'Strigler', slug: 'hest/pleje/strigler' },
+            { name: 'Shampoo', slug: 'hest/pleje/shampoo' },
+            { name: 'Hovprodukter', slug: 'hest/pleje/hov' }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'TIL STALDEN',
+      subcategories: [
+        {
+          name: 'Foder',
+          items: [
+            { name: 'Kraftfoder', slug: 'stald/foder/kraft' },
+            { name: 'Tilskud', slug: 'stald/foder/tilskud' },
+            { name: 'Godbidder', slug: 'stald/foder/godbidder' }
+          ]
+        },
+        {
+          name: 'Staldmateriel',
+          items: [
+            { name: 'Forkopper', slug: 'stald/materiel/forkopper' },
+            { name: 'Skridtlæns', slug: 'stald/materiel/skridtlans' },
+            { name: 'Hønæt', slug: 'stald/materiel/honat' }
+          ]
+        },
+        {
+          name: 'Diverse',
+          items: [
+            { name: 'Trillebøre', slug: 'stald/diverse/trillebore' },
+            { name: 'Skovle', slug: 'stald/diverse/skovle' },
+            { name: 'Opbevaring', slug: 'stald/diverse/opbevaring' }
+          ]
+        }
+      ]
+    }
+  ];
+
+  // For mobile view: simplified categories for the mobile menu
+  const mobileCategoryItems = [
+    { name: 'TIL RYTTEREN', subcategories: ['Ridebukser', 'Jakker', 'Sikkerhedsudstyr'] },
+    { name: 'TIL HESTEN', subcategories: ['Dækkener', 'Udstyr', 'Pleje'] },
+    { name: 'TIL STALDEN', subcategories: ['Foder', 'Staldmateriel', 'Diverse'] }
+  ];
+
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -31,10 +124,11 @@ const Header = () => {
     router.refresh();
   };
 
-  const handleCategoryClick = (category: Category) => {
-    const route = categoryRoutes[category];
-    if (route) {
-      router.push(route);
+  const toggleMobileCategory = (category: string) => {
+    if (expandedMobileCategory === category) {
+      setExpandedMobileCategory(null);
+    } else {
+      setExpandedMobileCategory(category);
     }
   };
 
@@ -42,9 +136,8 @@ const Header = () => {
     // For desktop view (logged in state only)
     if (isLoading) {
       // Show skeleton loader while auth state is loading
-      // Removed animate-pulse for Safari compatibility
       return (
-        <div className="h-10 w-24 bg-gray-200 rounded-full"></div>
+        <div className="h-10 w-24 bg-gray-200 rounded-full animate-pulse"></div>
       );
     }
 
@@ -132,8 +225,7 @@ const Header = () => {
     if (isLoading) {
       return (
         <div className="flex justify-center py-4">
-          {/* Removed animate-pulse for Safari compatibility */}
-          <div className="h-10 w-32 bg-gray-200 rounded-md"></div>
+          <div className="h-10 w-32 bg-gray-200 rounded-md animate-pulse"></div>
         </div>
       );
     }
@@ -232,27 +324,16 @@ const Header = () => {
             </button>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {categories.map((category) => (
-              <button
-                key={category}
-                className="px-3 py-2 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors"
-                onClick={() => handleCategoryClick(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </nav>
+          {/* Mega Menu (Desktop) */}
+          <MegaMenu categories={megaMenuCategories} />
 
           {/* Desktop Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {isLoading ? (
               // Skeleton loader while checking auth state
-              // Removed animate-pulse for Safari compatibility
               <div className="flex space-x-4">
-                <div className="h-10 w-36 bg-gray-200 rounded-md"></div>
-                <div className="h-10 w-24 bg-gray-200 rounded-md"></div>
+                <div className="h-10 w-36 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
               </div>
             ) : user ? (
               <>
@@ -288,14 +369,44 @@ const Header = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100">
           <div className="px-4 pt-2 pb-3 space-y-1">
-            {categories.map((category) => (
-              <button
-                key={category}
-                className="block w-full text-left px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors"
-                onClick={() => handleCategoryClick(category)}
-              >
-                {category}
-              </button>
+            {mobileCategoryItems.map((category) => (
+              <div key={category.name} className="border-b border-gray-100 pb-2">
+                <button
+                  className="flex justify-between items-center w-full px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors text-left"
+                  onClick={() => toggleMobileCategory(category.name)}
+                >
+                  {category.name}
+                  <svg 
+                    className={`w-4 h-4 transform transition-transform ${expandedMobileCategory === category.name ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24" 
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {expandedMobileCategory === category.name && (
+                  <div className="pl-6 mt-1 space-y-1">
+                    {category.subcategories.map((subcat) => (
+                      <button
+                        key={subcat}
+                        className="block w-full text-left px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-sm transition-colors"
+                        onClick={() => {
+                          // This would navigate to a listing page with both category and subcategory filters
+                          // Example: /listings/rytter?subcategory=ridebukser
+                          const mainCat = category.name.split(' ')[1].toLowerCase();
+                          router.push(`/listings/${mainCat}?subcategory=${subcat.toLowerCase()}`);
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        {subcat}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
           <div className="px-4 py-4 border-t border-gray-100">
