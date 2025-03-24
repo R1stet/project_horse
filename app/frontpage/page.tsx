@@ -35,6 +35,7 @@ export default function FrontPage() {
     const [heroImageUrl, setHeroImageUrl] = useState('');
     const [imageLoading, setImageLoading] = useState(true);
     const supabase = createClient();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     
     const { isInWishlist, toggleWishlist } = useWishlist();
     
@@ -57,6 +58,28 @@ export default function FrontPage() {
       }, 2000);
       return () => clearTimeout(timeoutId);
     }, [titleNumber, titles]);
+
+    // Check if user is authenticated
+    useEffect(() => {
+      const checkAuthStatus = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
+      };
+      
+      checkAuthStatus();
+      
+      // Set up auth state change listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          setIsAuthenticated(!!session);
+        }
+      );
+      
+      // Cleanup subscription on unmount
+      return () => {
+        subscription.unsubscribe();
+      };
+    }, [supabase]);
 
     // Fetch hero image from Supabase storage
     useEffect(() => {
@@ -149,6 +172,14 @@ export default function FrontPage() {
       setImageLoading(false);
     };
 
+    const handleSellingButtonClick = () => {
+      if (isAuthenticated) {
+        router.push('/create_listing');
+      } else {
+        router.push('/signup');
+      }
+    };
+
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -222,7 +253,7 @@ export default function FrontPage() {
                   </Button>
                   <Button 
                     size="lg" 
-                    onClick={() => router.push('/create_listing')}
+                    onClick={handleSellingButtonClick}
                     className="gap-4 bg-white text-rose-500 font-bold hover:bg-gray-100 transition-colors shadow-lg"
                   >
                     SÆLG NU
