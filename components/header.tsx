@@ -17,15 +17,13 @@ const Header = () => {
   const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
 
-  const categories = ['TIL RYTTEREN', 'TIL HESTEN', 'TIL STALDEN', 'SE ALLE'] as const;
+  const categories = ['TIL RYTTEREN', 'TIL HESTEN', 'TIL STALDEN'] as const;
   type Category = typeof categories[number];
   
   const categoryRoutes: Record<Category, string | undefined> = {
     'TIL RYTTEREN': undefined,
     'TIL HESTEN': undefined,
-    'TIL STALDEN': undefined,
-    'SE ALLE': '/listings'
-  };
+    'TIL STALDEN': undefined,};
 
   const handleSignOut = async () => {
     await signOut();
@@ -44,8 +42,9 @@ const Header = () => {
     // For desktop view (logged in state only)
     if (isLoading) {
       // Show skeleton loader while auth state is loading
+      // Removed animate-pulse for Safari compatibility
       return (
-        <div className="h-10 w-24 bg-gray-200 rounded-full animate-pulse"></div>
+        <div className="h-10 w-24 bg-gray-200 rounded-full"></div>
       );
     }
 
@@ -133,7 +132,8 @@ const Header = () => {
     if (isLoading) {
       return (
         <div className="flex justify-center py-4">
-          <div className="h-10 w-32 bg-gray-200 rounded-md animate-pulse"></div>
+          {/* Removed animate-pulse for Safari compatibility */}
+          <div className="h-10 w-32 bg-gray-200 rounded-md"></div>
         </div>
       );
     }
@@ -249,9 +249,10 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             {isLoading ? (
               // Skeleton loader while checking auth state
+              // Removed animate-pulse for Safari compatibility
               <div className="flex space-x-4">
-                <div className="h-10 w-36 bg-gray-200 rounded-md animate-pulse"></div>
-                <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 w-36 bg-gray-200 rounded-md"></div>
+                <div className="h-10 w-24 bg-gray-200 rounded-md"></div>
               </div>
             ) : user ? (
               <>

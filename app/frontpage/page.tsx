@@ -218,7 +218,7 @@ export default function FrontPage() {
                         <motion.span
                           key={index}
                           className="absolute font-semibold"
-                          initial={{ opacity: 0, y: "-100" }}
+                          initial={{ opacity: 0, y: -100 }}
                           transition={{ type: "spring", stiffness: 50 }}
                           animate={
                             titleNumber === index
@@ -271,13 +271,13 @@ export default function FrontPage() {
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loading ? (
-                  // Loading placeholders
+                  // Loading placeholders - removed animate-pulse for Safari compatibility
                   [...Array(6)].map((_, i) => (
                     <div key={i} className="rounded-xl overflow-hidden shadow-md">
-                      <div className="h-64 bg-gray-200 animate-pulse"></div>
+                      <div className="h-64 bg-gray-200"></div>
                       <div className="p-4">
-                        <div className="h-4 bg-gray-200 animate-pulse mb-2 w-3/4"></div>
-                        <div className="h-4 bg-gray-200 animate-pulse w-1/2"></div>
+                        <div className="h-4 bg-gray-200 mb-2 w-3/4"></div>
+                        <div className="h-4 bg-gray-200 w-1/2"></div>
                       </div>
                     </div>
                   ))
