@@ -11,98 +11,93 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
-import MegaMenu from './MegaMenu';
+import MegaMenu, { MegaMenuProps } from './MegaMenu';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
 
-  // Define the mega menu structure
+  // Define the mega menu structure with new categories and subcategories
   const megaMenuCategories = [
     {
-      name: 'TIL RYTTEREN',
+      name: 'Rytter',
       subcategories: [
         {
-          name: 'Ridebukser',
+          name: 'Tøj',
           items: [
-            { name: 'Damer', slug: 'rytter/ridebukser/damer' },
-            { name: 'Herrer', slug: 'rytter/ridebukser/herrer' },
-            { name: 'Børn', slug: 'rytter/ridebukser/born' }
+            { name: 'Ridebukser', slug: 'ridebukser' },
+            { name: 'Jakker', slug: 'jakker' },
+            { name: 'Strik', slug: 'strik' },
+            { name: 'Polos', slug: 'polos' },
+            { name: 'Sweatshirts', slug: 'sweatshirts' },
+            { name: 'Skjorter', slug: 'skjorter' },
+            { name: 'T-Shirts', slug: 't-shirts' }
           ]
         },
         {
-          name: 'Jakker',
+          name: 'Sikkerhed',
           items: [
-            { name: 'Softshell', slug: 'rytter/jakker/softshell' },
-            { name: 'Regntæt', slug: 'rytter/jakker/regntat' },
-            { name: 'Vinterjakker', slug: 'rytter/jakker/vinter' }
+            { name: 'Ridehjelme', slug: 'ridehjelme' },
+            { name: 'Sikkerhedsveste', slug: 'sikkerhedsveste' },
+            { name: 'Airbags', slug: 'airbags' }
           ]
         },
         {
-          name: 'Sikkerhedsudstyr',
+          name: 'Tilbehør',
           items: [
-            { name: 'Ridehjelme', slug: 'rytter/sikkerhed/hjelme' },
-            { name: 'Sikkerhedsveste', slug: 'rytter/sikkerhed/veste' },
-            { name: 'Reflekser', slug: 'rytter/sikkerhed/reflekser' }
+            { name: 'Caps', slug: 'caps' },
+            { name: 'Accessories', slug: 'accessories' },
+            { name: 'Tasker', slug: 'tasker' },
+            { name: 'Støvler', slug: 'stovler' },
+            { name: 'Handsker', slug: 'handsker' },
+            { name: 'Stigbøjler', slug: 'stigbojler' },
+            { name: 'Sundhedsteknologi', slug: 'sundhedsteknologi-rytter' }
           ]
         }
       ]
     },
     {
-      name: 'TIL HESTEN',
+      name: 'Hest',
       subcategories: [
         {
-          name: 'Dækkener',
+          name: 'Udrustning',
           items: [
-            { name: 'Staldtæpper', slug: 'hest/dakkener/stald' },
-            { name: 'Fluedækkener', slug: 'hest/dakkener/flue' },
-            { name: 'Regnslag', slug: 'hest/dakkener/regn' }
+            { name: 'Sadler', slug: 'sadler' },
+            { name: 'Sadelpads', slug: 'sadelpads' },
+            { name: 'Trenser & Grimer', slug: 'trenser-grimer' },
+            { name: 'Bid', slug: 'bid' },
+            { name: 'Fortøj & Hjælpetøjler', slug: 'fortoj-hjaelpetojler' },
+            { name: 'Gjorde', slug: 'gjorde' }
           ]
         },
         {
-          name: 'Udstyr',
+          name: 'Beskyttelse',
           items: [
-            { name: 'Hovedtøj', slug: 'hest/udstyr/hovedtoj' },
-            { name: 'Sadler', slug: 'hest/udstyr/sadler' },
-            { name: 'Gamacher', slug: 'hest/udstyr/gamacher' }
+            { name: 'Dækkener', slug: 'daekkener' },
+            { name: 'Bandager', slug: 'bandager' },
+            { name: 'Gamacher', slug: 'gamacher' },
+            { name: 'Ørenet', slug: 'orenet' }
           ]
         },
         {
-          name: 'Pleje',
+          name: 'Pleje & Sundhed',
           items: [
-            { name: 'Strigler', slug: 'hest/pleje/strigler' },
-            { name: 'Shampoo', slug: 'hest/pleje/shampoo' },
-            { name: 'Hovprodukter', slug: 'hest/pleje/hov' }
+            { name: 'Pleje', slug: 'pleje' },
+            { name: 'Sadelunderlag', slug: 'sadelunderlag' },
+            { name: 'Sundhedsteknologi', slug: 'sundhedsteknologi-hest' }
           ]
         }
       ]
     },
     {
-      name: 'TIL STALDEN',
+      name: 'Stald',
       subcategories: [
         {
           name: 'Foder',
           items: [
-            { name: 'Kraftfoder', slug: 'stald/foder/kraft' },
-            { name: 'Tilskud', slug: 'stald/foder/tilskud' },
-            { name: 'Godbidder', slug: 'stald/foder/godbidder' }
-          ]
-        },
-        {
-          name: 'Staldmateriel',
-          items: [
-            { name: 'Forkopper', slug: 'stald/materiel/forkopper' },
-            { name: 'Skridtlæns', slug: 'stald/materiel/skridtlans' },
-            { name: 'Hønæt', slug: 'stald/materiel/honat' }
-          ]
-        },
-        {
-          name: 'Diverse',
-          items: [
-            { name: 'Trillebøre', slug: 'stald/diverse/trillebore' },
-            { name: 'Skovle', slug: 'stald/diverse/skovle' },
-            { name: 'Opbevaring', slug: 'stald/diverse/opbevaring' }
+            { name: 'Snacks', slug: 'snacks' },
+            { name: 'Tilskudsfoder', slug: 'tilskudsfoder' }
           ]
         }
       ]
@@ -111,9 +106,9 @@ const Header = () => {
 
   // For mobile view: simplified categories for the mobile menu
   const mobileCategoryItems = [
-    { name: 'TIL RYTTEREN', subcategories: ['Ridebukser', 'Jakker', 'Sikkerhedsudstyr'] },
-    { name: 'TIL HESTEN', subcategories: ['Dækkener', 'Udstyr', 'Pleje'] },
-    { name: 'TIL STALDEN', subcategories: ['Foder', 'Staldmateriel', 'Diverse'] }
+    { name: 'Rytter', subcategories: ['Tøj', 'Sikkerhed', 'Tilbehør'] },
+    { name: 'Hest', subcategories: ['Udrustning', 'Beskyttelse', 'Pleje & Sundhed'] },
+    { name: 'Stald', subcategories: ['Foder'] }
   ];
 
   const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
@@ -394,10 +389,8 @@ const Header = () => {
                         key={subcat}
                         className="block w-full text-left px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-sm transition-colors"
                         onClick={() => {
-                          // This would navigate to a listing page with both category and subcategory filters
-                          // Example: /listings/rytter?subcategory=ridebukser
-                          const mainCat = category.name.split(' ')[1].toLowerCase();
-                          router.push(`/listings/${mainCat}?subcategory=${subcat.toLowerCase()}`);
+                          // Navigate to listings with both category and subcategory filters
+                          router.push(`/listings?category=${encodeURIComponent(category.name)}&subcategory=${encodeURIComponent(subcat)}`);
                           setIsMobileMenuOpen(false);
                         }}
                       >
