@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Loader2, ArrowLeft, Edit, Trash2, ImageOff, MapPin, Share, Heart, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Loader2, ArrowLeft, Edit, Trash2, ImageOff, Share, Heart, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { use } from 'react'
 import ListingCard from '@/components/ListingCard'
+import { useWishlist } from '@/context/WishlistContext'
 
 interface Listing {
   id: string
@@ -41,10 +42,12 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
   const [userLoading, setUserLoading] = useState(true)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [saved, setSaved] = useState(false)
   const [currentImage, setCurrentImage] = useState(0)
   const [relatedListings, setRelatedListings] = useState<Listing[]>([])
   const [sellerName, setSellerName] = useState<string | null>(null)
+  
+  // Use the wishlist context
+  const { isInWishlist, toggleWishlist } = useWishlist()
   
   const router = useRouter()
   const supabase = createClient()
@@ -215,22 +218,6 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
   const imageUrl = getImageUrl(listing.image_url)
   const images = imageUrl ? [imageUrl] : ['/api/placeholder/600/600']
 
-  // Generate some product highlights based on the listing data
-  const generateHighlights = () => {
-    const baseHighlights = [
-      `Quality ${listing.category} in ${listing.condition || 'great condition'}`,
-      `Located in ${listing.location}`,
-    ]
-    
-    if (listing.subcategory) {
-      baseHighlights.push(`${listing.subcategory} type for best experience`)
-    }
-    
-    return baseHighlights
-  }
-
-  const highlights = generateHighlights()
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header />
@@ -313,22 +300,17 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
             </div>
 
             <div className="space-y-2">
-              <p className="text-3xl font-bold">{listing.price.toLocaleString()} kr DKK</p>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <MapPin size={16} className="mr-1" />
-                <span>{listing.location}</span>
-              </div>
+              <p className="text-3xl font-bold">{listing.price.toLocaleString()} DKK</p>
             </div>
 
             <hr className="border-t border-gray-200 my-4" />
 
-            <div className="space-y-2">
-              <h3 className="font-medium">Product Highlights</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                {highlights.map((highlight, index) => (
-                  <li key={index}>{highlight}</li>
-                ))}
-              </ul>
+            {/* Description */}
+            <div className="space-y-4">
+              <h3 className="font-medium text-lg">Description</h3>
+              <div className="prose max-w-none">
+                <p>{listing.description}</p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -339,10 +321,10 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => setSaved(!saved)}
+                onClick={() => toggleWishlist(listing.id)}
               >
-                <Heart className={`mr-2 h-5 w-5 ${saved ? "fill-current" : ""}`} />
-                {saved ? "Saved" : "Save Listing"}
+                <Heart className={`mr-2 h-5 w-5 ${isInWishlist(listing.id) ? "fill-current" : ""}`} />
+                {isInWishlist(listing.id) ? "Saved" : "Save Listing"}
               </Button>
             </div>
             
@@ -355,14 +337,6 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                 year: 'numeric'
               }).replace(/\//g, '.')}</span>
             </div>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Description</h2>
-          <div className="space-y-4">
-            <p>{listing.description}</p>
           </div>
         </div>
         
@@ -431,8 +405,8 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                 <ListingCard 
                   key={relatedListing.id}
                   listing={relatedListing}
-                  isFavorite={false}
-                  onToggleFavorite={() => {}}
+                  isFavorite={isInWishlist(relatedListing.id)}
+                  onToggleFavorite={toggleWishlist}
                 />
               ))
             ) : (
