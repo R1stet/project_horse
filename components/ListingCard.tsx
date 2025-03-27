@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ImageOff, Heart } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
@@ -40,6 +41,7 @@ const ListingCard: React.FC<ListingCardProps> = ({
   const supabase = createClient();
   const [fetchedUsername, setFetchedUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [sellerId, setSellerId] = useState<string>(listing.user_id);
   
   // Function to get the correct image URL
   const getImageUrl = (url: string) => {
@@ -69,10 +71,17 @@ const ListingCard: React.FC<ListingCardProps> = ({
       setLoading(true);
       try {
         // Check if the user is the current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user && user.id === listing.user_id) {
-          setFetchedUsername('You (Current User)');
-          return;
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser();
+          if (!error && user && user.id === listing.user_id) {
+            setFetchedUsername('You (Current User)');
+            setSellerId(user.id);
+            setLoading(false);
+            return;
+          }
+        } catch (authErr) {
+          // Silently handle auth errors and continue to fetch username
+          console.log("Auth check skipped:", authErr);
         }
         
         // Fetch from profiles table
@@ -89,6 +98,7 @@ const ListingCard: React.FC<ListingCardProps> = ({
         
         if (data && data.username) {
           setFetchedUsername(data.username);
+          setSellerId(listing.user_id);
         }
       } catch (err) {
         console.error('Error in username fetch:', err);
@@ -109,6 +119,10 @@ const ListingCard: React.FC<ListingCardProps> = ({
 
   const navigateToListing = () => {
     router.push(`/listings/${listing.id}`);
+  };
+
+  const handleSellerClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the card click from triggering
   };
 
   const imageUrl = getImageUrl(listing.image_url);
@@ -132,6 +146,7 @@ const ListingCard: React.FC<ListingCardProps> = ({
     : "font-medium text-gray-900 line-clamp-1";
   
   const infoTextClasses = compact ? "text-xs text-gray-500" : "text-gray-500";
+  const sellerLinkClasses = "hover:text-blue-600 hover:underline cursor-pointer";
 
   return (
     <div 
@@ -198,13 +213,27 @@ const ListingCard: React.FC<ListingCardProps> = ({
         {compact ? (
           <div className="flex justify-between mt-1">
             <p className={`${infoTextClasses} truncate max-w-[180px]`}>
-              {displayedSellerName} • {listing.location}
+              <Link 
+                href={`/seller/${sellerId}`} 
+                onClick={handleSellerClick}
+                className={sellerLinkClasses}
+              >
+                {displayedSellerName}
+              </Link>
+              {' • '}
+              {listing.location}
             </p>
           </div>
         ) : (
           <div className="flex justify-between mt-1">
             <p className="text-gray-500 truncate max-w-[180px]">
-              {displayedSellerName}
+              <Link 
+                href={`/seller/${sellerId}`} 
+                onClick={handleSellerClick}
+                className={sellerLinkClasses}
+              >
+                {displayedSellerName}
+              </Link>
             </p>
             <p className="text-gray-500 truncate max-w-[120px]">{listing.location}</p>
           </div>

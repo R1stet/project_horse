@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Loader2, ArrowLeft, Edit, Trash2, ImageOff, Share, Heart, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import Header from '@/components/header'
@@ -10,7 +11,6 @@ import Footer from '@/components/footer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
 import { use } from 'react'
 import ListingCard from '@/components/ListingCard'
 import { useWishlist } from '@/context/WishlistContext'
@@ -45,6 +45,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
   const [currentImage, setCurrentImage] = useState(0)
   const [relatedListings, setRelatedListings] = useState<Listing[]>([])
   const [sellerName, setSellerName] = useState<string | null>(null)
+  const [sellerId, setSellerId] = useState<string | null>(null)
   
   // Use the wishlist context
   const { isInWishlist, toggleWishlist } = useWishlist()
@@ -81,17 +82,32 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
     }
   }
 
+  // Handle save listing with authentication check
+  const handleSaveListingClick = () => {
+    if (user) {
+      // User is logged in, use the wishlist context to toggle
+      toggleWishlist(listing!.id)
+    } else {
+      // User is not logged in, redirect to signup
+      router.push('/signup')
+    }
+  }
+
   useEffect(() => {
     // Fetch current user
     const getUser = async () => {
       setUserLoading(true)
-      const { data: { user }, error } = await supabase.auth.getUser()
-      if (error) {
-        console.error('Error fetching user:', error)
-      } else {
-        setUser(user)
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (!error) {
+          setUser(user)
+        }
+      } catch (err) {
+        console.error('Auth session error:', err)
+        // Continue without user data
+      } finally {
+        setUserLoading(false)
       }
-      setUserLoading(false)
     }
 
     // Fetch the listing details
@@ -112,6 +128,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
 
         if (data) {
           setListing(data)
+          setSellerId(data.user_id)
           
           // Fetch seller name
           const { data: userData, error: userError } = await supabase
@@ -292,9 +309,16 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
               <div className="flex items-center mt-2">
                 <span className="text-sm text-muted-foreground">
                   Sold by{" "}
-                  <Link href="#" className="text-primary hover:underline">
-                    {sellerName || `User ${listing.user_id.substring(0, 6)}`}
-                  </Link>
+                  {sellerId ? (
+                    <Link 
+                      href={`/seller/${sellerId}`} 
+                      className="text-primary hover:underline"
+                    >
+                      {sellerName || `User ${listing.user_id.substring(0, 6)}`}
+                    </Link>
+                  ) : (
+                    <span>{sellerName || `User ${listing.user_id.substring(0, 6)}`}</span>
+                  )}
                 </span>
               </div>
             </div>
@@ -321,12 +345,22 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => toggleWishlist(listing.id)}
+                onClick={handleSaveListingClick}
               >
-                <Heart className={`mr-2 h-5 w-5 ${isInWishlist(listing.id) ? "fill-current" : ""}`} />
-                {isInWishlist(listing.id) ? "Saved" : "Save Listing"}
+                <Heart className={`mr-2 h-5 w-5 ${user && isInWishlist(listing.id) ? "fill-current" : ""}`} />
+                {user && isInWishlist(listing.id) ? "Saved" : "Save Listing"}
               </Button>
             </div>
+            
+            {/* View Seller Profile Button */}
+            {sellerId && !isOwner && (
+              <Link 
+                href={`/seller/${sellerId}`}
+                className="block w-full text-center py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors mt-4"
+              >
+                View Seller Profile
+              </Link>
+            )}
             
             {/* Listed date */}
             <div className="py-2 flex items-center text-sm text-muted-foreground">
@@ -405,8 +439,8 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                 <ListingCard 
                   key={relatedListing.id}
                   listing={relatedListing}
-                  isFavorite={isInWishlist(relatedListing.id)}
-                  onToggleFavorite={toggleWishlist}
+                  isFavorite={user ? isInWishlist(relatedListing.id) : false}
+                  onToggleFavorite={user ? toggleWishlist : () => router.push('/signup')}
                 />
               ))
             ) : (
