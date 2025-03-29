@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
-import { Loader2, Upload, Camera, X, Check, Edit2 } from "lucide-react"
+import { Loader2, Camera, X, Check, Edit2, CreditCard, ShieldCheck } from "lucide-react"
 import Image from 'next/image'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
@@ -205,25 +205,6 @@ export default function Dashboard() {
     }
   }
 
-  // Handle email update
-  const handleUpdateEmail = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setSuccess(null)
-    setUpdateLoading(true)
-
-    try {
-      const { error } = await supabase.auth.updateUser({ email })
-      if (error) throw error
-
-      setSuccess('Email update initiated. Please check your new email for verification.')
-    } catch (err: any) {
-      setError(err.message || 'Failed to update email')
-    } finally {
-      setUpdateLoading(false)
-    }
-  }
-
   // Handle password update
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -251,6 +232,17 @@ export default function Dashboard() {
     }
   }
 
+  // Placeholder functions for future features
+  const handleBecomeSeller = () => {
+    // In future: Redirect to Stripe
+    setSuccess('Seller functionality coming soon!')
+  }
+
+  const handleVerifyProfile = () => {
+    // In future: Redirect to verification page
+    setSuccess('Verification functionality coming soon!')
+  }
+
   // Handle click on a listing to navigate to its detail page
   const handleListingClick = (listingId: string) => {
     router.push(`/listings/${listingId}`)
@@ -258,18 +250,18 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-[#1B3376]" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
-      <main className="flex-grow bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Account Settings</h1>
+          <h1 className="text-3xl font-bold text-[#1B3376] mb-8">Account Settings</h1>
 
           {error && (
             <Alert variant="destructive" className="mb-6">
@@ -279,22 +271,22 @@ export default function Dashboard() {
           )}
 
           {success && (
-            <Alert className="mb-6 bg-green-50 text-green-800 border-green-200">
+            <Alert className="mb-6 bg-[#E0E4F1] text-[#1B3376] border-[#7A8CC0] border-2">
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
 
-          <div className="bg-white shadow-sm rounded-lg divide-y divide-gray-200">
+          <div className="bg-white shadow-md rounded-lg border-2 border-[#E0E4F1] divide-y-2 divide-[#E0E4F1]">
             {/* Profile Section */}
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile</h2>
+              <h2 className="text-xl font-semibold text-[#1B3376] mb-4">Profile</h2>
               
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="relative">
-                  <div className="h-24 w-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                  <div className="h-24 w-24 rounded-full overflow-hidden bg-[#E0E4F1] flex items-center justify-center border-2 border-[#7A8CC0]">
                     {avatarLoading ? (
-                      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                      <Loader2 className="h-8 w-8 animate-spin text-[#7A8CC0]" />
                     ) : avatarUrl ? (
                       <Image 
                         src={avatarUrl}
@@ -305,7 +297,7 @@ export default function Dashboard() {
                         onError={() => setAvatarUrl(null)}
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-gray-400 text-2xl font-medium">
+                      <div className="h-full w-full flex items-center justify-center text-[#1B3376] text-2xl font-medium">
                         {username ? username.charAt(0).toUpperCase() : email.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -313,7 +305,7 @@ export default function Dashboard() {
                   
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-0 right-0 bg-rose-500 text-white p-2 rounded-full shadow-md hover:bg-rose-600 transition-colors"
+                    className="absolute bottom-0 right-0 bg-[#1B3376] text-white p-2 rounded-full shadow-md hover:bg-[#142759] transition-colors border-2 border-white"
                     disabled={avatarLoading}
                   >
                     <Camera size={16} />
@@ -330,7 +322,7 @@ export default function Dashboard() {
                 
                 <div className="flex-grow">
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-[#472A1A] mb-1">
                       Username
                     </label>
                     {editingUsername ? (
@@ -339,28 +331,28 @@ export default function Dashboard() {
                           type="text"
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 mr-2"
+                          className="block w-full px-3 py-2 border-2 border-[#7A8CC0] rounded-md shadow-sm focus:outline-none focus:ring-[#1B3376] focus:border-[#1B3376] mr-2"
                         />
                         <button
                           onClick={handleUpdateUsername}
                           disabled={updateLoading}
-                          className="p-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                          className="p-2 bg-[#1B3376] text-white rounded-md hover:bg-[#142759] border-2 border-[#1B3376]"
                         >
                           {updateLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check size={20} />}
                         </button>
                         <button
                           onClick={() => setEditingUsername(false)}
-                          className="p-2 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300 ml-2"
+                          className="p-2 bg-[#E0E4F1] text-[#1B3376] rounded-md hover:bg-[#7A8CC0] ml-2 border-2 border-[#7A8CC0]"
                         >
                           <X size={20} />
                         </button>
                       </div>
                     ) : (
                       <div className="flex items-center">
-                        <span className="text-gray-900">{username || 'No username set'}</span>
+                        <span className="text-[#1B3376] font-medium">{username || 'No username set'}</span>
                         <button
                           onClick={() => setEditingUsername(true)}
-                          className="ml-2 p-1 text-gray-500 hover:text-gray-700"
+                          className="ml-2 p-1 text-[#7A8CC0] hover:text-[#1B3376]"
                         >
                           <Edit2 size={16} />
                         </button>
@@ -369,52 +361,40 @@ export default function Dashboard() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-[#472A1A] mb-1">
                       Email Address
                     </label>
-                    <div className="text-gray-900">{email}</div>
+                    <div className="text-[#1B3376] font-medium">{email}</div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Email Update Section */}
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Update Email</h2>
-              <form onSubmit={handleUpdateEmail} className="space-y-4 max-w-md">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    required
-                  />
-                </div>
+              
+              {/* Account action buttons */}
+              <div className="mt-6 flex flex-col sm:flex-row gap-4">
                 <button
-                  type="submit"
-                  disabled={updateLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-50"
+                  onClick={handleBecomeSeller}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#472A1A] text-white rounded-md hover:bg-[#331D12] transition-colors font-medium shadow-md border-2 border-[#472A1A]"
                 >
-                  {updateLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    'Update Email'
-                  )}
+                  <CreditCard size={18} />
+                  <span>Bliv Sælger</span>
                 </button>
-              </form>
+                
+                <button
+                  onClick={handleVerifyProfile}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#7A8CC0] text-white rounded-md hover:bg-[#5A6B9C] transition-colors font-medium shadow-md border-2 border-[#7A8CC0]"
+                >
+                  <ShieldCheck size={18} />
+                  <span>Verificér din profil</span>
+                </button>
+              </div>
             </div>
-
+            
             {/* Password Update Section */}
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Change Password</h2>
+              <h2 className="text-xl font-semibold text-[#1B3376] mb-4">Change Password</h2>
               <form onSubmit={handleUpdatePassword} className="space-y-4 max-w-md">
                 <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-[#472A1A]">
                     New Password
                   </label>
                   <input
@@ -422,13 +402,13 @@ export default function Dashboard() {
                     id="newPassword"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#7A8CC0] rounded-md shadow-sm focus:outline-none focus:ring-[#1B3376] focus:border-[#1B3376]"
                     required
                     minLength={8}
                   />
                 </div>
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#472A1A]">
                     Confirm New Password
                   </label>
                   <input
@@ -436,7 +416,7 @@ export default function Dashboard() {
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#7A8CC0] rounded-md shadow-sm focus:outline-none focus:ring-[#1B3376] focus:border-[#1B3376]"
                     required
                     minLength={8}
                   />
@@ -444,7 +424,7 @@ export default function Dashboard() {
                 <button
                   type="submit"
                   disabled={updateLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-50"
+                  className="w-full flex justify-center py-3 px-4 border-2 border-[#1B3376] rounded-md shadow-md text-sm font-medium text-white bg-[#1B3376] hover:bg-[#142759] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3376] disabled:opacity-50"
                 >
                   {updateLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -458,10 +438,10 @@ export default function Dashboard() {
             {/* Listings Section */}
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">My Listings</h2>
+                <h2 className="text-xl font-semibold text-[#1B3376]">My Listings</h2>
                 <button
                   onClick={() => router.push('/create_listing')}
-                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-pink-500 rounded-md hover:opacity-90"
+                  className="px-6 py-3 text-sm font-medium text-white bg-[#1B3376] border-2 border-[#1B3376] rounded-md hover:bg-[#142759] shadow-md"
                 >
                   Create New Listing
                 </button>
@@ -469,14 +449,14 @@ export default function Dashboard() {
 
               {loadingListings ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                  <Loader2 className="h-8 w-8 animate-spin text-[#7A8CC0]" />
                 </div>
               ) : listings.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {listings.map((listing) => (
                     <div 
                       key={listing.id} 
-                      className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+                      className="cursor-pointer border-2 border-[#E0E4F1] rounded-md hover:shadow-lg transition-shadow duration-200"
                       onClick={() => handleListingClick(listing.id)}
                     >
                       <ListingCard listing={listing} />
@@ -484,9 +464,9 @@ export default function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">You haven't created any listings yet.</p>
-                  <p className="text-sm text-gray-500 mt-2">
+                <div className="text-center py-8 border-3 border-dashed border-[#7A8CC0] rounded-lg bg-[#F8F9FC]">
+                  <p className="text-[#1B3376] font-medium">You haven't created any listings yet.</p>
+                  <p className="text-sm text-[#472A1A] mt-2">
                     Click the "Create New Listing" button to get started!
                   </p>
                 </div>
