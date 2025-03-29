@@ -56,13 +56,13 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ categories }) => {
           <button
             className={`px-3 py-2 font-medium text-lg transition-colors relative ${
               activeCategory === category.name 
-                ? 'text-black font-bold' 
-                : 'text-gray-700 hover:text-black hover:font-bold'
+                ? 'text-white font-bold' 
+                : 'text-white hover:text-white hover:font-bold'
             }`}
           >
             {category.name}
             {activeCategory === category.name && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black rounded-full"></span>
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white rounded-full"></span>
             )}
           </button>
 

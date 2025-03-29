@@ -199,11 +199,11 @@ export default function FrontPage() {
                   onLoad={handleImageLoad}
                 />
               ) : (
-                // Fallback to gradient if image fails to load
-                <div className="w-full h-full bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400"></div>
+                // Fallback to gradient using new colors
+                <div className="w-full h-full bg-gradient-to-br from-[#263190] via-[#3a4aa5] to-[#D9BB9F]"></div>
               )}
-              {/* Dark overlay for better text readability */}
-              <div className="absolute inset-0 bg-black/40"></div>
+              {/* Dark overlay for better text readability - slightly adjusted */}
+              <div className="absolute inset-0 bg-black/30"></div>
             </div>
             
             {/* Content */}
@@ -247,14 +247,14 @@ export default function FrontPage() {
                     size="lg" 
                     variant="outline"
                     onClick={() => router.push('/listings')}
-                    className="gap-4 bg-white text-rose-500 hover:bg-gray-100 hover:text-rose-600"
+                    className="gap-4 bg-white text-[#263190] hover:bg-[#D9BB9F] hover:text-[#263190] hover:border-[#263190] transition-colors"
                   >
                     Browse products <MoveRight className="w-4 h-4" />
                   </Button>
                   <Button 
                     size="lg" 
                     onClick={handleSellingButtonClick}
-                    className="gap-4 bg-white text-rose-500 font-bold hover:bg-gray-100 transition-colors shadow-lg"
+                    className="gap-4 bg-[#263190] text-white rounded-lg font-medium hover:bg-[#D9BB9F] hover:text-[#263190] transition-colors border border-transparent hover:border-[#263190]"
                   >
                     SÆLG NU
                   </Button>
@@ -266,7 +266,7 @@ export default function FrontPage() {
           {/* Featured Products Section */}
           <section className="w-full py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8">
+              <h2 className="text-2xl font-bold text-[#263190] mb-8">
                 Featured Products
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -284,10 +284,10 @@ export default function FrontPage() {
                 ) : recentListings.length === 0 ? (
                   // No listings found
                   <div className="col-span-full text-center py-12">
-                    <div className="text-gray-500 mb-2">
+                    <div className="text-[#D9BB9F] mb-2">
                       <ImageOff className="mx-auto h-12 w-12" />
                     </div>
-                    <h3 className="text-xl font-medium text-gray-900">No listings available</h3>
+                    <h3 className="text-xl font-medium text-[#263190]">No listings available</h3>
                     <p className="text-gray-500 mt-2">Check back soon for new products</p>
                   </div>
                 ) : (
@@ -307,7 +307,7 @@ export default function FrontPage() {
                 <div className="text-center mt-12">
                   <button 
                     onClick={() => router.push('/listings')}
-                    className="px-6 py-3 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 transition-colors"
+                    className="px-6 py-3 bg-[#263190] text-white rounded-lg font-medium hover:bg-[#D9BB9F] hover:text-[#263190] transition-colors border border-transparent hover:border-[#263190]"
                   >
                     View all products
                   </button>
@@ -317,9 +317,9 @@ export default function FrontPage() {
           </section>
 
           {/* Brands Section */}
-          <section className="w-full py-16 bg-gray-50">
+          <section className="w-full py-16 bg-[#f8f5f2]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              <h2 className="text-2xl font-bold text-[#263190] text-center mb-8">
                 Featured Brands
               </h2>
               {/* Integrate the Brands component */}
