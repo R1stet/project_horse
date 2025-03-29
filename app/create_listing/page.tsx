@@ -30,6 +30,7 @@ export default function CreateListing() {
   const [category, setCategory] = useState<Category>('')
   const [subcategory, setSubcategory] = useState('')
   const [condition, setCondition] = useState<Condition>('')
+  const [brand, setBrand] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   
@@ -45,6 +46,30 @@ export default function CreateListing() {
     'Hest': ['Bandager', 'Bid', 'Fortøj & Hjælpetøjler', 'Trenser & Grimer', 'Pleje', 'Ørenet', 'Gjorde', 'Sadelunderlag', 'Sundhedsteknologi', 'Dækkener', 'Gamacher', 'Sadler', 'Sadelpads'],
     'Stald': ['Snacks', 'Tilskudsfoder']
   }
+
+  // Brands list
+  const brands = [
+    'Acavallo', 'Ariat', 'Back on Track', 'Borstiq farm', 'Boxbear', 'Brogaarden',
+    'By Weber', 'By Wilton', 'Carr & Day & Martin', 'Casco', 'Cashel', 'Catago',
+    'Cavalleria Toscana', 'Cavallo', 'Collonil', 'Compositi', 'CWD', 'De Niro Boots',
+    'Dubarry', 'Dyon', 'Elt', 'Emin', 'Equestrian Stockholm', 'Equick',
+    'Equidan Vetline', 'Equine America', 'Equine lts', 'Equipage', 'Equisoft',
+    'Equsana', 'Eskadron', 'Fager', 'Fairplay', 'Finesse Bridles', 'Fir-tech - Catago',
+    'Fleck', 'Freejump', 'Grooming Deluxe', 'Harry\'s horse', 'Hermes', 'Herman Sprenger',
+    'HELITE', 'Hit-air', 'Hkm', 'Horseguard', 'Horseware', 'Incrediwear',
+    'Humma Kæpheste', 'Karlslund', 'Kask Equestrian', 'Kentucky Horsewear',
+    'Kep Italia', 'Kingsland', 'Kingsland Classic', 'Komperdell', 'Lemieux',
+    'Leovet', 'Likit', 'Lyngsøe', 'Medilamb', 'Montar', 'Mountain Horse',
+    'Myler bid', 'Naff', 'Nathalie Horse Care', 'Nettex', 'Neue Schule Bits',
+    'Nikwax', 'NORDIC HORSE', 'Ogilvy', 'One K', 'One K Design selv ridehjelme',
+    'Os - Otto Schumacher', 'Parisol', 'Passier', 'Pikeur', 'Professional\'s Choice',
+    'Q-pet', 'Quick Knot', 'Rambo', 'Rider By Horse', 'Riders Company', 'Roeckl',
+    'Royal Steel', 'Samshield', 'Samshield ridehjelme', 'Scharf', 'Schockemöhle',
+    'SD Design', 'Seeland', 'Seaver', 'Siccaro', 'Sleekez', 'Solanum', 'Sprenger',
+    'St. Hippolyt', 'Stud Muffins', 'STÜBBEN', 'Swing', 'Thermatex',
+    'Tommy Hilfiger Equestrian', 'Trolle Projects', 'Tucci', 'Twinkle', 'Veredus',
+    'Vestrum', 'VIP Equestrian', 'Waldhausen', 'Werner Christ', 'Wintec', 'Woof wear'
+  ].sort();
 
   // Condition options
   const conditionOptions: Condition[] = [
@@ -188,6 +213,7 @@ export default function CreateListing() {
           category,
           subcategory,
           condition,
+          brand,
           user_id: user.id,
           image_url: imageUrl
         })
@@ -203,6 +229,7 @@ export default function CreateListing() {
       setCategory('')
       setSubcategory('')
       setCondition('')
+      setBrand('')
       setImage(null)
       setImagePreview(null)
 
@@ -315,6 +342,27 @@ export default function CreateListing() {
                   <option value="">Vælg en underkategori</option>
                   {subcategories[category].map((sub) => (
                     <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectIconClasses} size={18} />
+              </div>
+            </div>
+
+            {/* Brand - New Section */}
+            <div>
+              <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
+                Brand
+              </label>
+              <div className={selectWrapperClasses}>
+                <select
+                  id="brand"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                  className={selectClasses}
+                >
+                  <option value="">Vælg brand (valgfrit)</option>
+                  {brands.map((brandOption) => (
+                    <option key={brandOption} value={brandOption}>{brandOption}</option>
                   ))}
                 </select>
                 <ChevronDown className={selectIconClasses} size={18} />
