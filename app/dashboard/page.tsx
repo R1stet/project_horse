@@ -232,10 +232,9 @@ export default function Dashboard() {
     }
   }
 
-  // Placeholder functions for future features
+  // Redirect to Stripe Connect onboarding
   const handleBecomeSeller = () => {
-    // In future: Redirect to Stripe
-    setSuccess('Seller functionality coming soon!')
+    router.push('/stripe/onboarding')
   }
 
   const handleVerifyProfile = () => {
